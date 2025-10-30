@@ -1,0 +1,55 @@
+name: Daily Email Summarization
+
+on:
+  # Run every day at 8:00 AM UTC (adjust timezone as needed)
+  schedule:
+    - cron: '0 8 * * *'
+  
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      userId:
+        description: 'User ID to process (optional, will process all users if empty)'
+        required: false
+        type: string
+      maxEmails:
+        description: 'Maximum emails to fetch per user'
+        required: false
+        default: '20'
+        type: string
+
+jobs:
+  summarize-emails:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run email summarization script
+        working-directory: ./backend
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          USER_ID: ${{ github.event.inputs.userId }}
+          MAX_EMAILS: ${{ github.event.inputs.maxEmails || '20' }}
+        run: npm run summarize
+
+      - name: Log completion
+        run: |
+          echo "✅ Daily email summarization completed at $(date)"
+          echo "📊 Check logs above for details"

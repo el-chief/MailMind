@@ -1,0 +1,67 @@
+name: Health Check & Monitoring
+
+on:
+  # Run every hour
+  schedule:
+    - cron: '0 * * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check API Health
+        id: health
+        continue-on-error: true
+        run: |
+          # Replace with your actual deployment URL
+          HEALTH_URL="${{ secrets.APP_URL }}/health"
+          
+          echo "🏥 Checking: $HEALTH_URL"
+          
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$HEALTH_URL" || echo "000")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          
+          echo "status_code=$HTTP_CODE" >> $GITHUB_OUTPUT
+          echo "response_body=$BODY" >> $GITHUB_OUTPUT
+          
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Health check passed (HTTP $HTTP_CODE)"
+            echo "📝 Response: $BODY"
+            exit 0
+          else
+            echo "❌ Health check failed (HTTP $HTTP_CODE)"
+            echo "📝 Response: $BODY"
+            exit 1
+          fi
+
+      - name: Check Database Connection
+        if: steps.health.outcome == 'success'
+        run: |
+          echo "✅ API is healthy"
+          echo "🗄️ Database connection assumed OK (API is responding)"
+
+      - name: Alert on Failure
+        if: failure()
+        run: |
+          echo "🚨 ALERT: Health check failed!"
+          echo "Status Code: ${{ steps.health.outputs.status_code }}"
+          echo "Response: ${{ steps.health.outputs.response_body }}"
+          echo ""
+          echo "Action Required:"
+          echo "1. Check application logs"
+          echo "2. Verify database connection"
+          echo "3. Check deployment status"
+          echo ""
+          # You can integrate with notification services here
+          # Example: Send to Telegram, Discord, or email
+
+      - name: Log Success
+        if: success()
+        run: |
+          echo "✅ All systems operational"
+          echo "📊 Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"

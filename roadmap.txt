@@ -1,0 +1,257 @@
+🧭 MAILMIND — ROADMAP
+“Your personal AI that reads, summarizes, and organizes your emails daily — privately and for free.”
+🧰 Tech Stack (Selected)
+
+- Backend: Node.js 20 + TypeScript, Fastify, LangGraph for workflow orchestration, Gmail API via googleapis, Mongoose + MongoDB Atlas (free tier)
+- Summarization: LangGraph graph with nodes (fetch → preprocess → summarize → structure → store → notify); LLM provider via env: Ollama (local dev) or OpenAI-compatible in cloud
+- Frontend: React + TypeScript with Vite (host on GitHub Pages/Netlify free)
+- Scheduler: GitHub Actions cron triggers backend endpoint daily
+- Hosting: Backend on Render or Railway (free), Frontend on GitHub Pages/Netlify (free), Database on MongoDB Atlas (free)
+- Notifications: Telegram Bot or Discord webhook (optional)
+- Logging/Monitoring: Pino logs; optional Sentry for errors
+🌱 Phase 1: Foundation & Planning ✅ COMPLETE
+🎯 Goals
+
+Clarify what the product will do and what it won't.
+
+Plan integrations (Gmail, local AI summarizer, optional Notion or Telegram).
+
+Choose deployment & hosting strategy (Render, Railway, or VPS).
+
+📋 Deliverables
+
+✅ Project scope document (docs/01-project-scope.md)
+
+✅ Feature list (MVP + future ideas) (docs/02-feature-list.md)
+
+✅ Architecture overview (Frontend, Backend, Summarizer, Storage) (docs/03-architecture.md)
+
+✅ Tech stack finalized (docs/04-tech-stack.md)
+
+✅ README.md created
+
+✅ Phase 1 checklist completed
+
+Status: COMPLETE - October 30, 2025
+
+⚙️ Phase 2: Backend Core (Data Pipeline)
+Objective
+
+Build the logic that fetches, processes, and summarizes your emails daily.
+
+Tasks
+
+Set up Gmail connection
+
+Register app on Google Cloud Console
+
+Set up OAuth access to read Gmail messages
+
+Test fetching recent emails
+
+ Summarization layer (AI workflow via LangGraph)
+
+ Implement LangGraph nodes: fetch_messages → preprocess → summarize → structure → store → notify
+
+ LLM provider via env: Ollama (local dev) or OpenAI-compatible (cloud)
+
+ Standardize summary format (subject, sender, short summary, receivedAt, tags)
+
+ Storage
+
+ Use MongoDB Atlas (free tier) with Mongoose
+
+ Define collections: users, gmail_tokens, summaries, runs (optional)
+
+ Add indexes (summaries: userId+date unique)
+
+ Scheduler
+
+ Automate daily email fetching & summarization using GitHub Actions cron calling backend task endpoint (protected by secret)
+
+ 📋 Deliverables
+
+ Working backend pipeline using LangGraph and MongoDB Atlas
+
+Raw summaries stored per day
+
+Environment variables and secrets configured securely
+
+🖥️ Phase 3: Frontend (User Dashboard)
+Objective
+
+Create a simple, modern dashboard to visualize daily summaries.
+
+Tasks
+
+UI/UX Design
+
+Minimal layout: Today’s summary, previous days, search
+
+Clean dark/light theme
+
+Data Fetching
+
+Connect frontend to backend API
+
+Display daily summaries dynamically
+
+Basic Filtering
+
+Filter by sender or keyword (optional for MVP)
+
+📋 Deliverables
+
+Fully functional dashboard
+
+Fetches and displays current day summaries
+
+Responsive and mobile-friendly UI
+
+📨 Phase 4: Notifications & Integrations
+Objective
+
+Extend functionality to deliver summaries automatically to your preferred medium.
+
+Tasks
+
+Telegram or Discord Notification
+
+Integrate free APIs for daily digest delivery
+
+Optional: Notion Sync
+
+Store each day’s summary as a Notion page
+
+Customization Settings
+
+Allow turning on/off notifications
+
+Choose output channels
+
+📋 Deliverables
+
+Automatic daily digest sent via Telegram/Discord
+
+Optional Notion integration for personal recordkeeping
+
+☁️ Phase 5: Deployment & Hosting
+Objective
+
+Deploy the entire project so it runs daily, online, and free.
+
+ Tasks
+
+ Select hosting platform
+
+ Frontend: GitHub Pages or Netlify (free)
+
+ Backend: Render (recommended for ease) or Railway (good free limits) free tier
+
+ Database: MongoDB Atlas (free tier cluster)
+
+ Setup Environments
+
+ One service for backend (Node.js + Fastify)
+
+ One static site for frontend (React + Vite)
+
+ GitHub Actions scheduled workflow to run daily summarization (calls backend /api/tasks/runDaily with secret)
+
+ Environment Variables
+
+ Securely store Gmail credentials, tokens, LLM keys, MongoDB URI, and API secrets
+
+ Monitoring
+
+ Add simple logging or alert if summary generation fails
+
+📋 Deliverables
+
+Fully deployed app
+
+Summaries generated daily automatically
+
+Accessible dashboard (public/private)
+
+🔧 Environment & Configuration
+
+Backend env variables
+
+- PORT, NODE_ENV, WEB_ORIGIN
+- MONGODB_URI (Atlas)
+- GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
+- LLM_PROVIDER (ollama | openai | openrouter | groq | together)
+- OLLAMA_BASE_URL (for local dev)
+- OPENAI_API_KEY (if using hosted LLM)
+- TASKS_SECRET (protect scheduled task endpoint)
+- TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID or DISCORD_WEBHOOK_URL (optional)
+
+Dev vs Prod
+
+Dev: Local Ollama, localhost callback, optional Actions; Atlas free or local dev cluster
+
+Prod: Hosted LLM (optional), public callback, GitHub Actions cron enabled; Atlas free cluster
+
+🚀 Phase 6: Post-Deployment Enhancements
+Objective
+
+Add smart features, improve UX, and expand integrations.
+
+Tasks
+
+Smart classification (work, personal, newsletters)
+
+Priority sender detection
+
+Voice summary option (TTS integration)
+
+Offline caching
+
+Multi-account support
+
+📋 Deliverables
+
+Enhanced, intelligent summarization
+
+Richer dashboard with filters and insights
+
+🧩 Phase 7: Maintenance & Scaling
+Objective
+
+Keep the system stable, improve performance, and prepare for potential expansion.
+
+Tasks
+
+Regular backups of summaries
+
+Update models periodically (newer local LLMs)
+
+Optimize cron frequency and storage
+
+Optionally integrate analytics (how many summaries generated, average daily length, etc.)
+
+📋 Deliverables
+
+Stable, optimized system
+
+Ready for new features or public release
+
+🕒 Estimated Timeline
+Phase	Duration	Outcome
+1. Planning	2–3 days	Clear blueprint
+2. Backend Core	1 week	Working data pipeline
+3. Frontend	3–5 days	Dashboard ready
+4. Notifications	2–3 days	Telegram/Discord updates
+5. Deployment	2–3 days	Live app
+6. Enhancements	Continuous	Improved intelligence
+7. Maintenance	Ongoing	Stable service
+🧠 Optional Advanced Ideas (Future)
+
+Integrate with GitHub MCP to summarize repo notifications
+
+Add voice-based daily report (“Good morning! You received 12 emails…”)
+
+Create a browser extension to summarize directly in Gmail
+
+Deploy as a desktop app (Electron) for offline use
