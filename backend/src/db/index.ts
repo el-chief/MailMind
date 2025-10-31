@@ -1,11 +1,7 @@
 import mongoose from "mongoose";
 import type { ConnectOptions, Connection } from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
-
-if (!MONGODB_URI) {
-  throw new Error("MONGODB_URI not found");
-}
+const MONGODB_URI = process.env.MONGODB_URI as string | undefined;
 
 if (!globalThis.mongoose) {
   globalThis.mongoose = { conn: null, promise: null } as {
@@ -14,9 +10,18 @@ if (!globalThis.mongoose) {
   };
 }
 
-export async function connectDatabase(): Promise<Connection> {
+export async function connectDatabase(): Promise<Connection | null> {
   if (globalThis.mongoose.conn) {
     return globalThis.mongoose.conn;
+  }
+
+  if (!MONGODB_URI) {
+    // Do not throw at module import time. Throwing prevents the app from
+    // starting in environments where env vars are injected later (e.g. CI/
+    // container platforms). Instead, return null and let callers decide how
+    // to proceed.
+    console.warn('MONGODB_URI not provided; skipping DB connection')
+    return null
   }
 
   if (!globalThis.mongoose.promise) {
