@@ -1,20 +1,3 @@
-# Build stage
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Copy package files
-COPY backend/package*.json ./
-
-# Install dependencies
-RUN npm ci
-
-# Copy source code
-COPY backend/ .
-
-# Build TypeScript
-RUN npm run build
-
 # Production stage
 FROM node:20-alpine
 
@@ -23,11 +6,12 @@ WORKDIR /app
 # Copy package files
 COPY backend/package*.json ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev
+# Install dependencies (we'll use tsx to run TypeScript directly)
+RUN npm ci --omit=dev && \
+    npm install tsx
 
-# Copy built files from builder
-COPY --from=builder /app/dist ./dist
+# Copy source code
+COPY backend/ .
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -46,5 +30,5 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:5000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); });"
 
-# Start app
-CMD ["npm", "start"]
+# Start app with tsx (runs TypeScript directly)
+CMD ["npx", "tsx", "src/index.ts"]
